@@ -58,6 +58,7 @@ import (
 	"database/sql/driver"
 	"fmt"
 	"io"
+	"math/rand/v2"
 	"reflect"
 	"sync"
 )
@@ -111,7 +112,6 @@ type conn struct {
 	dsn       string
 	opened    uint
 	drv       *TxDriver
-	saves     uint
 	savePoint SavePoint
 
 	cancel func()
@@ -269,8 +269,7 @@ func (c *conn) Begin() (driver.Tx, error) {
 		return nil, err
 	}
 
-	c.saves++
-	id := fmt.Sprintf("tx_%d", c.saves)
+	id := fmt.Sprintf("tx_%d", rand.Int64())
 	_, err = connTx.Exec(c.savePoint.Create(id))
 	if err != nil {
 		return nil, err
